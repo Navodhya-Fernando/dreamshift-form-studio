@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DreamShift · Form Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #07090F;
+  --surface:  #0E1117;
+  --surface2: #161B26;
+  --border:   #1E2533;
+  --border2:  #2A3347;
+  --g:        #1D9E75;
+  --g-dim:    rgba(29,158,117,.12);
+  --g-glow:   rgba(29,158,117,.25);
+  --text:     #E8ECF4;
+  --muted:    #4E5A6E;
+  --muted2:   #8494AA;
+  --white:    #FFFFFF;
+  --red:      #EF4444;
+  --gold:     #D4A234;
+  --radius:   12px;
+  --radius-sm:8px;
+  --shadow:   0 1px 3px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  --font:     'Inter', -apple-system, sans-serif;
+}
+
+html { font-size: 14px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: 56px;
+  background: rgba(7,9,15,.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 15px; letter-spacing: -.3px;
+}
+.nav-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--g);
+  box-shadow: 0 0 6px var(--g-glow);
+}
+.nav-divider {
+  width: 1px; height: 16px;
+  background: var(--border2);
+  margin: 0 4px;
+}
+.nav-sub { font-size: 12px; font-weight: 400; color: var(--muted2); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.btn-new {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 14px;
+  background: var(--g); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity .15s, box-shadow .15s;
+  box-shadow: 0 0 0 0 var(--g-glow);
+}
+.btn-new:hover {
+  opacity: .9;
+  box-shadow: 0 0 16px var(--g-glow);
+}
+.btn-new svg { flex-shrink: 0; }
+
+/* ── MAIN ── */
+.main { max-width: 1140px; margin: 0 auto; padding: 36px 24px 80px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center;
+  padding: 80px 20px; text-align: center;
+  gap: 12px;
+}
+.empty-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: var(--g-dim); border: 1px solid var(--g);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 4px;
+}
+.empty-title { font-size: 16px; font-weight: 600; color: var(--text); }
+.empty-sub { font-size: 13px; color: var(--muted2); max-width: 320px; line-height: 1.6; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 1px;
+  color: var(--muted); text-transform: uppercase;
+}
+.form-count {
+  font-size: 12px; color: var(--muted);
+  background: var(--surface2);
+  padding: 2px 8px; border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+/* ── CARDS GRID ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.client-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.client-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--g), transparent);
+  opacity: 0; transition: opacity .2s;
+}
+.client-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.client-card:hover::before { opacity: 1; }
+
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.card-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--g-dim);
+  border: 1px solid rgba(29,158,117,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--g);
+  flex-shrink: 0;
+}
+.card-meta { text-align: right; }
+.card-date { font-size: 11px; color: var(--muted); }
+.card-resp-count {
+  font-size: 11px; font-weight: 600;
+  color: var(--g); margin-top: 2px;
+}
+.card-name {
+  font-size: 14px; font-weight: 600;
+  color: var(--text); margin-bottom: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-title {
+  font-size: 12px; color: var(--muted2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.card-qcount { font-size: 11px; color: var(--muted); }
+.card-arrow {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--muted2);
+  transition: background .15s, color .15s;
+}
+.client-card:hover .card-arrow {
+  background: var(--g-dim);
+  border-color: rgba(29,158,117,.4);
+  color: var(--g);
+}
+
+/* ── OVERLAY ── */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(7,9,15,.7);
+  backdrop-filter: blur(6px);
+  animation: fadeIn .2s ease;
+}
+.overlay.open { display: flex; align-items: center; justify-content: center; padding: 20px; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── MODAL BASE ── */
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 560px;
+  max-height: 90vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  animation: slideUp .22s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-title { font-size: 15px; font-weight: 600; }
+.modal-close {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: none; border: 1px solid var(--border);
+  color: var(--muted2); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+.modal-body { padding: 20px 22px; overflow-y: auto; flex: 1; }
+
+/* ── NEW FORM MODAL ── */
+.field-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .7px;
+  color: var(--muted); text-transform: uppercase;
+  display: block; margin-bottom: 7px;
+}
+.field-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+  color: var(--text); font-family: var(--font); font-size: 13px;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.field-input:focus {
+  border-color: var(--g);
+  box-shadow: 0 0 0 3px rgba(29,158,117,.1);
+}
+.field-input::placeholder { color: var(--muted); }
+.field-textarea {
+  min-height: 200px; resize: vertical;
+  line-height: 1.7; font-size: 12.5px;
+}
+.field-gap { margin-bottom: 16px; }
+
+/* Generate button states */
+.btn-generate {
+  width: 100%; margin-top: 4px;
+  padding: 11px 16px;
+  background: var(--g); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .15s, box-shadow .15s;
+  position: relative; overflow: hidden;
+}
+.btn-generate:hover:not(:disabled) {
+  opacity: .92; box-shadow: 0 0 20px var(--g-glow);
+}
+.btn-generate:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Shimmer on loading */
+.btn-generate.loading::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.08) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  to { transform: translateX(100%); }
+}
+
+/* Dots loader */
+.dots { display: inline-flex; gap: 4px; align-items: center; }
+.dots span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,.7);
+  animation: bounce .9s infinite ease-in-out;
+}
+.dots span:nth-child(2) { animation-delay: .15s; }
+.dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce {
+  0%,80%,100% { transform: scale(.7); opacity:.5; }
+  40%         { transform: scale(1);  opacity:1; }
+}
+
+/* Progress bar under button */
+.gen-progress-wrap {
+  height: 2px; background: var(--border); border-radius: 1px;
+  margin-top: 8px; overflow: hidden; display: none;
+}
+.gen-progress-bar {
+  height: 2px; background: var(--g); border-radius: 1px;
+  width: 0%; transition: width .4s ease;
+}
+
+/* ── SUCCESS STATE ── */
+.success-box {
+  display: none;
+  margin-top: 16px;
+  background: var(--g-dim);
+  border: 1px solid rgba(29,158,117,.3);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.success-box.show { display: block; }
+.success-check {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: var(--g);
+  margin-bottom: 12px;
+}
+.url-row {
+  display: flex; gap: 8px; align-items: stretch;
+  margin-bottom: 8px;
+}
+.url-label {
+  font-size: 10px; font-weight: 600; letter-spacing: .6px;
+  color: var(--muted); text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.url-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-size: 12px; font-family: var(--font);
+  color: var(--g); white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; outline: none;
+  cursor: text;
+}
+.btn-copy {
+  padding: 8px 14px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  color: var(--muted2); cursor: pointer;
+  white-space: nowrap; transition: all .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-copy:hover { border-color: var(--g); color: var(--g); background: var(--g-dim); }
+.btn-copy.copied { background: var(--g-dim); border-color: var(--g); color: var(--g); }
+
+/* ── ERROR ── */
+.error-msg {
+  display: none; margin-top: 12px;
+  padding: 10px 13px;
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: var(--radius-sm);
+  font-size: 12px; color: #FCA5A5; line-height: 1.5;
+}
+.error-msg.show { display: block; }
+
+/* ── RESPONSE MODAL ── */
+.res-modal { max-width: 680px; }
+.res-header-info {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 4px;
+}
+.res-avatar {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: var(--g-dim);
+  border: 1px solid rgba(29,158,117,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: var(--g);
+  flex-shrink: 0;
+}
+.res-name { font-size: 16px; font-weight: 600; }
+.res-meta { font-size: 12px; color: var(--muted2); margin-top: 1px; }
+.res-stats {
+  display: flex; gap: 8px; margin: 14px 0;
+}
+.res-stat {
+  flex: 1; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 12px; text-align: center;
+}
+.rs-num { font-size: 20px; font-weight: 700; color: var(--text); }
+.rs-num.green { color: var(--g); }
+.rs-label { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: .3px; }
+
+.res-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.res-tab {
+  padding: 8px 14px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  color: var(--muted2); border-bottom: 2px solid transparent;
+  margin-bottom: -1px; background: none; border-top: none;
+  border-left: none; border-right: none;
+  transition: all .15s;
+}
+.res-tab.on { color: var(--g); border-bottom-color: var(--g); }
+
+.response-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  margin-bottom: 10px;
+}
+.rc-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.rc-respondent { font-size: 12px; font-weight: 600; color: var(--text); }
+.rc-date { font-size: 11px; color: var(--muted); }
+.qa-item { margin-bottom: 12px; }
+.qa-item:last-child { margin-bottom: 0; }
+.qa-q {
+  font-size: 11px; font-weight: 600; color: var(--muted2);
+  margin-bottom: 4px; letter-spacing: .2px;
+}
+.qa-a {
+  font-size: 13px; color: var(--text); line-height: 1.6;
+  background: var(--surface);
+  border-radius: 6px; padding: 8px 10px;
+  border-left: 2px solid var(--g);
+}
+
+.no-responses {
+  text-align: center; padding: 40px 20px;
+  color: var(--muted2); font-size: 13px;
+}
+.no-responses-icon { font-size: 28px; margin-bottom: 8px; }
+
+.loading-responses {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 40px; color: var(--muted2); font-size: 13px;
+}
+
+/* ── LINKS ROW (in response modal) ── */
+.form-links-row {
+  display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+}
+.link-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  font-size: 12px; font-weight: 500; color: var(--muted2);
+  cursor: pointer; text-decoration: none;
+  transition: all .15s;
+}
+.link-pill:hover { border-color: var(--g); color: var(--g); background: var(--g-dim); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  box-shadow: var(--shadow-lg);
+  z-index: 999;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s, transform .2s;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1; pointer-events: auto;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* ── SKELETON ── */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%);
+  background-size: 200% 100%;
+  animation: skel 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes skel { to { background-position: -200% 0; } }
+
+@media (max-width: 600px) {
+  .nav { padding: 0 16px; }
+  .main { padding: 24px 16px 60px; }
+  .modal { border-radius: 14px 14px 0 0; max-height: 94vh; }
+  .overlay { align-items: flex-end; padding: 0; }
+  .res-stats { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    DreamShift
+    <div class="nav-divider"></div>
+    <span class="nav-sub">Form Studio</span>
+  </div>
+  <div class="nav-right">
+    <button class="btn-new" onclick="openNewForm()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M6.5 1v11M1 6.5h11" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      New Form
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main" id="main">
+  <div id="skeleton-grid" class="cards-grid" style="display:none">
+    <div style="height:130px" class="skeleton"></div>
+    <div style="height:130px" class="skeleton"></div>
+    <div style="height:130px" class="skeleton"></div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<!-- ── OVERLAY ── -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+
+  <!-- NEW FORM MODAL -->
+  <div class="modal" id="new-form-modal" style="display:none">
+    <div class="modal-header">
+      <span class="modal-title">New client form</span>
+      <button class="modal-close" onclick="closeAll()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-gap">
+        <label class="field-label" for="f-client">Client name</label>
+        <input class="field-input" id="f-client" type="text" placeholder="e.g. Priya Sharma">
+      </div>
+      <div class="field-gap">
+        <label class="field-label" for="f-title">Form title</label>
+        <input class="field-input" id="f-title" type="text" placeholder="e.g. DreamShift — IT Intake · May 2026">
+      </div>
+      <div class="field-gap">
+        <label class="field-label" for="f-qs">Paste questionnaire</label>
+        <textarea class="field-input field-textarea" id="f-qs"
+          placeholder="Paste questions in any format — numbered, bullets, plain text. Include answer options where applicable.
+
+1. What is your full name?
+2. What is your visa status?
+   - 485 Graduate Visa
+   - PR Holder
+   - Student Visa (500)
+   - Australian Citizen
+3. List your top 5 target job titles
+4. Describe your biggest project achievement (include numbers)
+5. Rate your English from 1 to 5
+..."></textarea>
+      </div>
+
+      <button class="btn-generate" id="gen-btn" onclick="generateForm()">
+        <span id="gen-btn-text">Generate Google Form</span>
+      </button>
+      <div class="gen-progress-wrap" id="gen-progress-wrap">
+        <div class="gen-progress-bar" id="gen-progress-bar"></div>
+      </div>
+
+      <div class="error-msg" id="gen-error"></div>
+
+      <div class="success-box" id="success-box">
+        <div class="success-check">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6.5" stroke="#1D9E75"/>
+            <path d="M4 7l2.2 2.2L10 4.5" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Form created successfully
+        </div>
+        <div class="url-label">Share with client</div>
+        <div class="url-row">
+          <input class="url-input" id="short-url-input" readonly value="">
+          <button class="btn-copy" id="copy-short-btn" onclick="copyUrl('short-url-input','copy-short-btn')">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M3 8H2a1 1 0 01-1-1V2a1 1 0 011-1h5a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="url-label" style="margin-top:8px">Edit link (internal)</div>
+        <div class="url-row">
+          <input class="url-input" id="edit-url-input" readonly value="">
+          <button class="btn-copy" id="copy-edit-btn" onclick="copyUrl('edit-url-input','copy-edit-btn')">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M3 8H2a1 1 0 01-1-1V2a1 1 0 011-1h5a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESPONSE MODAL -->
+  <div class="modal res-modal" id="res-modal" style="display:none">
+    <div class="modal-header">
+      <div class="res-header-info">
+        <div class="res-avatar" id="res-avatar">?</div>
+        <div>
+          <div class="res-name" id="res-name">—</div>
+          <div class="res-meta" id="res-meta">—</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeAll()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="res-stats">
+        <div class="res-stat">
+          <div class="rs-num green" id="rs-count">0</div>
+          <div class="rs-label">Responses</div>
+        </div>
+        <div class="res-stat">
+          <div class="rs-num" id="rs-questions">0</div>
+          <div class="rs-label">Questions</div>
+        </div>
+        <div class="res-stat">
+          <div class="rs-num" id="rs-created">—</div>
+          <div class="rs-label">Created</div>
+        </div>
+      </div>
+
+      <div class="form-links-row" id="form-links-row"></div>
+
+      <div style="margin-top:16px" id="res-tabs-wrap">
+        <div class="res-tabs" id="res-tabs"></div>
+        <div id="res-content"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let FORMS = [];
+let currentFormId = null;
+let currentResponses = [];
+let currentTab = 0;
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', loadForms);
+
+async function loadForms() {
+  showSkeleton(true);
+  try {
+    const res = await fetch('/.netlify/functions/list-forms');
+    const data = await res.json();
+    FORMS = data.forms || [];
+    renderDashboard();
+  } catch (e) {
+    renderDashboard(); // show empty state on error
+  } finally {
+    showSkeleton(false);
+  }
+}
+
+function showSkeleton(on) {
+  document.getElementById('skeleton-grid').style.display = on ? 'grid' : 'none';
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const el = document.getElementById('content');
+  if (!FORMS.length) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No forms yet</div>
+        <div class="empty-sub">Click "New Form" to generate your first Google Form from a questionnaire.</div>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="section-header">
+      <span class="section-label">Client forms</span>
+      <span class="form-count">${FORMS.length} form${FORMS.length !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="cards-grid">
+      ${FORMS.map(f => cardHTML(f)).join('')}
+    </div>`;
+}
+
+function initials(name) {
+  return (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function cardHTML(f) {
+  return `
+    <div class="client-card" onclick="openResponses('${f._id}')">
+      <div class="card-top">
+        <div class="card-avatar">${initials(f.clientName)}</div>
+        <div class="card-meta">
+          <div class="card-date">${fmtDate(f.createdAt)}</div>
+          <div class="card-resp-count">${f.responseCount || 0} response${(f.responseCount || 0) !== 1 ? 's' : ''}</div>
+        </div>
+      </div>
+      <div class="card-name">${esc(f.clientName || 'Unnamed')}</div>
+      <div class="card-title">${esc(f.title || '')}</div>
+      <div class="card-footer">
+        <span class="card-qcount">${f.questionCount || '—'} questions</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </div>`;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── New Form modal ─────────────────────────────────────────────────────────────
+function openNewForm() {
+  // Reset state
+  document.getElementById('f-client').value = '';
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-qs').value = '';
+  document.getElementById('success-box').classList.remove('show');
+  document.getElementById('gen-error').classList.remove('show');
+  document.getElementById('gen-progress-wrap').style.display = 'none';
+  setGenBtn(false);
+
+  showModal('new-form-modal');
+}
+
+async function generateForm() {
+  const client = document.getElementById('f-client').value.trim();
+  const title  = document.getElementById('f-title').value.trim();
+  const text   = document.getElementById('f-qs').value.trim();
+
+  if (!client) { showGenError('Please enter the client name.'); return; }
+  if (!text)   { showGenError('Please paste the questionnaire text.'); return; }
+
+  setGenBtn(true);
+  document.getElementById('gen-error').classList.remove('show');
+  document.getElementById('success-box').classList.remove('show');
+  startProgress();
+
+  try {
+    const res = await fetch('/.netlify/functions/create-form', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientName: client,
+        title: title || `DreamShift — ${client} Intake`,
+        text
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to create form');
+
+    endProgress();
+
+    document.getElementById('short-url-input').value = data.shortUrl || data.responderUrl;
+    document.getElementById('edit-url-input').value  = data.editUrl;
+    document.getElementById('success-box').classList.add('show');
+
+    // Reload dashboard cards
+    await loadForms();
+
+  } catch (err) {
+    endProgress();
+    showGenError(err.message);
+  } finally {
+    setGenBtn(false);
+  }
+}
+
+function setGenBtn(loading) {
+  const btn  = document.getElementById('gen-btn');
+  const text = document.getElementById('gen-btn-text');
+  btn.disabled = loading;
+  if (loading) {
+    btn.classList.add('loading');
+    text.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>&nbsp;Generating form…`;
+  } else {
+    btn.classList.remove('loading');
+    text.textContent = 'Generate Google Form';
+  }
+}
+
+let progressTimer;
+function startProgress() {
+  const wrap = document.getElementById('gen-progress-wrap');
+  const bar  = document.getElementById('gen-progress-bar');
+  wrap.style.display = 'block';
+  bar.style.width = '0%';
+  let pct = 0;
+  progressTimer = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 6 + 2, 88);
+    bar.style.width = pct + '%';
+  }, 350);
+}
+function endProgress() {
+  clearInterval(progressTimer);
+  const bar = document.getElementById('gen-progress-bar');
+  bar.style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('gen-progress-wrap').style.display = 'none';
+  }, 500);
+}
+
+function showGenError(msg) {
+  const el = document.getElementById('gen-error');
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('show');
+}
+
+// ── Response modal ─────────────────────────────────────────────────────────────
+async function openResponses(mongoId) {
+  const form = FORMS.find(f => String(f._id) === String(mongoId));
+  if (!form) return;
+
+  currentFormId = form.formId;
+
+  // Populate header
+  document.getElementById('res-avatar').textContent = initials(form.clientName);
+  document.getElementById('res-name').textContent   = form.clientName || '—';
+  document.getElementById('res-meta').textContent   = form.title || '—';
+  document.getElementById('rs-questions').textContent = form.questionCount || '—';
+  document.getElementById('rs-created').textContent   = fmtDate(form.createdAt);
+  document.getElementById('rs-count').textContent     = '…';
+
+  // Links row
+  document.getElementById('form-links-row').innerHTML = `
+    <a class="link-pill" href="${form.editUrl}" target="_blank">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 9L9 2M9 2H5M9 2v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Edit form
+    </a>
+    <a class="link-pill" href="${form.shortUrl || form.responderUrl}" target="_blank">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 9L9 2M9 2H5M9 2v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Share link
+    </a>
+    <div class="link-pill" onclick="copyText('${esc(form.shortUrl || form.responderUrl)}', this)">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="3.5" y="3.5" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M2 7.5H1.5a1 1 0 01-1-1v-5a1 1 0 011-1h5a1 1 0 011 1V2" stroke="currentColor" stroke-width="1.2"/></svg>
+      Copy URL
+    </div>`;
+
+  // Loading state for responses
+  document.getElementById('res-tabs-wrap').innerHTML = `
+    <div class="loading-responses">
+      <div class="dots"><span></span><span></span><span></span></div>
+      Loading responses…
+    </div>`;
+
+  showModal('res-modal');
+
+  // Fetch responses
+  try {
+    const res  = await fetch(`/.netlify/functions/get-responses?formId=${form.formId}`);
+    const data = await res.json();
+    currentResponses = data.responses || [];
+    document.getElementById('rs-count').textContent = currentResponses.length;
+    renderResponses(currentResponses, form);
+  } catch (e) {
+    document.getElementById('rs-count').textContent = '—';
+    document.getElementById('res-tabs-wrap').innerHTML = `
+      <div class="no-responses">
+        <div class="no-responses-icon">⚠</div>
+        Could not load responses. Check your connection.
+      </div>`;
+  }
+}
+
+function renderResponses(responses, form) {
+  const wrap = document.getElementById('res-tabs-wrap');
+
+  if (!responses.length) {
+    wrap.innerHTML = `
+      <div class="no-responses">
+        <div class="no-responses-icon">📭</div>
+        No responses yet — share the form link with the client.
+      </div>`;
+    return;
+  }
+
+  // Tabs: one per respondent (or "All")
+  const tabs = responses.map((r, i) =>
+    `<button class="res-tab ${i===0?'on':''}" onclick="switchResTab(${i},this)">${r.email || `Response ${i+1}`}</button>`
+  ).join('');
+
+  wrap.innerHTML = `
+    <div class="res-tabs">${tabs}</div>
+    <div id="res-content"></div>`;
+
+  renderResTab(0, responses);
+}
+
+function switchResTab(i, btn) {
+  document.querySelectorAll('.res-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  renderResTab(i, currentResponses);
+}
+
+function renderResTab(i, responses) {
+  const r = responses[i];
+  if (!r) return;
+
+  const answers = r.answers || [];
+  const content = document.getElementById('res-content');
+  content.innerHTML = `
+    <div class="response-card">
+      <div class="rc-meta">
+        <span class="rc-respondent">${esc(r.email || 'Anonymous')}</span>
+        <span class="rc-date">Submitted ${fmtDate(r.submittedAt)}</span>
+      </div>
+      ${answers.map(a => `
+        <div class="qa-item">
+          <div class="qa-q">${esc(a.question)}</div>
+          <div class="qa-a">${esc(a.answer || '—')}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── Overlay helpers ────────────────────────────────────────────────────────────
+function showModal(id) {
+  const overlay = document.getElementById('overlay');
+  overlay.classList.add('open');
+  document.getElementById('new-form-modal').style.display = 'none';
+  document.getElementById('res-modal').style.display      = 'none';
+  document.getElementById(id).style.display = 'flex';
+  document.getElementById(id).style.flexDirection = 'column';
+}
+function closeAll() {
+  document.getElementById('overlay').classList.remove('open');
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('overlay')) closeAll();
+}
+
+// ── Clipboard ─────────────────────────────────────────────────────────────────
+function copyUrl(inputId, btnId) {
+  const val = document.getElementById(inputId).value;
+  copyText(val, document.getElementById(btnId));
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (btn && btn.tagName === 'BUTTON') {
+      const orig = btn.innerHTML;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    } else {
+      showToast('URL copied to clipboard');
+    }
+  });
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

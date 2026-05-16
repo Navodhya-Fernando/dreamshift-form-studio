@@ -1,0 +1,13 @@
+# Local Netlify folder
+.netlify
+
+# Private source data
+raw_data/*.csv
+
+# Local environment and dependencies
+.env
+.env.*
+node_modules/
+__pycache__/
+.python-version
+.DS_Store

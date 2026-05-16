@@ -1,0 +1,19 @@
+{
+  "name": "dreamshift-form-builder",
+  "version": "2.0.0",
+  "description": "Paste a questionnaire → Google Form → MongoDB → client response viewer",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "google-auth-library": "^9.11.0",
+    "googleapis": "^140.0.1",
+    "mongodb": "^6.7.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
