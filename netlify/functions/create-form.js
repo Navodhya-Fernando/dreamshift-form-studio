@@ -180,25 +180,29 @@ function buildRequests(questions) {
         item.questionItem.question.textQuestion = { paragraph: true };
         break;
       case 'MULTIPLE_CHOICE':
-        item.questionItem.question.choiceQuestion = {
-          type: 'RADIO',
-          options: (q.options || []).map(o => ({ value: String(o) })),
-          shuffle: false
-        };
-        break;
       case 'CHECKBOX':
+      case 'DROPDOWN': {
+        // Deduplicate options — Google Forms API rejects duplicate values
+        const seen    = new Set();
+        const deduped = (q.options || [])
+          .map(o => String(o).trim())
+          .filter(o => o && !seen.has(o) && seen.add(o));
+
+        if (deduped.length !== (q.options || []).length) {
+          console.warn(`[BUILD] Duplicates removed from "${q.title}":`, q.options);
+        }
+
+        const choiceType =
+          q.type === 'MULTIPLE_CHOICE' ? 'RADIO' :
+          q.type === 'CHECKBOX'        ? 'CHECKBOX' : 'DROP_DOWN';
+
         item.questionItem.question.choiceQuestion = {
-          type: 'CHECKBOX',
-          options: (q.options || []).map(o => ({ value: String(o) })),
+          type:    choiceType,
+          options: deduped.map(o => ({ value: o })),
           shuffle: false
         };
         break;
-      case 'DROPDOWN':
-        item.questionItem.question.choiceQuestion = {
-          type: 'DROP_DOWN',
-          options: (q.options || []).map(o => ({ value: String(o) }))
-        };
-        break;
+      }
       case 'SCALE':
         item.questionItem.question.scaleQuestion = {
           low:       q.scaleMin      ?? 1,
